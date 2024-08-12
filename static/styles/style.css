@@ -1,0 +1,156 @@
+:root {
+    --primary-color: #007BFF;
+    --background-color: #F5F5F5;
+    --success-color: #28A745;
+    --warning-color: #FFC107;
+    --error-color: #DC3545;
+    --secondary-color: #66B2FF;
+    --text-color: #343A40;
+    --text-inverse-color: #FFFFFF;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+button.primary {
+    background-color: var(--primary-color);
+    color: var(--text-inverse-color);
+}
+
+button.success {
+    background-color: var(--success-color);
+    color: var(--text-inverse-color);
+}
+
+button.warning {
+    background-color: var(--warning-color);
+    color: var(--text-color);
+}
+
+button.error {
+    background-color: var(--error-color);
+    color: var(--text-inverse-color);
+}
+
+button.secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-inverse-color);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 70px;
+    background-color: #f8f9fa;
+    align-items: center;
+    z-index: 1;
+}
+
+.sidebar:not(.show) > button.btn {
+    align-self: center !important;
+}
+
+.sidebar:not(.show) > div {
+    align-items: center;
+}
+
+/*.sidebar.show > div {*/
+/*    align-items: stretch !important;*/
+/*}*/
+
+
+.sidebar.show {
+    width: 250px;
+    align-items: start;
+}
+
+.sidebar .tooltip-nav {
+    position: relative;
+}
+
+.sidebar .tooltip-nav::after {
+    content: attr(data-name);
+    display: none;
+    position: absolute;
+    left: 50px;
+    text-wrap: nowrap;
+    top: 50%;
+    transform: translateY(-50%);
+    background: darkgray;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.sidebar .tooltip-nav::before {
+    content: '';
+    display: none;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 40px;
+    border-radius: 1px;
+    transform: rotate(45deg) translateY(-50%);
+    background: darkgray;
+    position: absolute;
+}
+.sidebar:not(.show) .tooltip-nav:hover::after, .sidebar:not(.show) .tooltip-nav:hover::before {
+    display: block;
+}
+
+
+.sidebar:not(.show) .link-text {
+    display: none;
+}
+
+.main-content {
+    margin-left: 70px;
+    width: calc(100% - 70px) !important;
+}
+
+.main-content.sidebar-expanded {
+    margin-left: 250px;
+    width: calc(100% - 250px) !important;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, calc(100%/4)));
+    gap: 1rem;
+    grid-auto-flow: dense; /* Ensures that items fill gaps */
+}
+
+.grid-item {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+}
+
+.grid-item.large {
+    grid-column: span 2;
+}
+
+#sidebarToggle > svg {
+    transition: transform 200ms ease-in-out;
+}
+
+.nav-pills {
+    gap: 8px;
+}
+
+.nav-link {
+    border: 1px solid #0d6efd !important;
+}
+
+.gap {
+    gap: 16px
+}

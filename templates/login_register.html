@@ -1,0 +1,62 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/style.css' %}">
+</head>
+<body>
+{% if page == 'login' %}
+    <div class="container-fluid d-flex align-items-center justify-content-center" style="height: 100dvh">
+        <form method="POST" action="" style="max-width: 400px" class="container d-flex flex-column">
+            <h3>Login</h3>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username...">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="Enter password...">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <br>
+            {% if messages %}
+                {% include 'message.html' with messages=messages %}
+            {% endif %}
+            <p class="text-center my-0">Haven't signed up yet?</p>
+            <a class="align-self-center" href="{% url 'register' %}">Sign Up</a>
+        </form>
+    </div>
+{% else %}
+    <div class="container-fluid d-flex align-items-center justify-content-center" style="height: 100vh">
+        <form method="POST" action="" style="max-width: 400px" class="d-flex flex-column container">
+            <h3>Register</h3>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+            <br>
+            {% if messages %}
+                {% include 'message.html' with messages=messages %}
+            {% endif %}
+            <p class="text-center my-0">Already signed up?</p>
+            <a class="align-self-center" href="{% url 'login' %}">Log In</a>
+        </form>
+    </div>
+{% endif %}
+</body>
+</html>

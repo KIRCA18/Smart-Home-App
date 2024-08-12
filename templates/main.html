@@ -1,0 +1,28 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock title %}</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/style.css' %}">
+    <script defer src="{% static 'scripts/dialog.js' %}"></script>
+</head>
+<body>
+{% include 'sidebar.html' %}
+<script defer src="{% static 'scripts/sidebar.js' %}"></script>
+<div class="main-content sidebar-expanded container-fluid p-3">
+    {% if messages %}
+        {% include 'message.html' with messages=messages %}
+    {% endif %}
+    {% block content %}
+
+    {% endblock %}
+</div>
+</body>
+</html>
