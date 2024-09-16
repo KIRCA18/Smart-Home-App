@@ -25,8 +25,8 @@
         </a>
     </div>
     <div>
-        <h3>No rooms in {{ house }}! Please add room!</h3>
-        <form method="POST" action="{% url 'create-room' pk=house.id %}">
+        <h4>No rooms in {{ house.name }}! Please add room!</h4>
+        <form style="max-width: 380px" method="POST" action="{% url 'create-room' pk=house.id %}">
             {% csrf_token %}
             {{ form.as_p }}
             <button class="btn btn-primary" type="submit">Add</button>
@@ -36,7 +36,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit {{ house }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Edit {{ house.name }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

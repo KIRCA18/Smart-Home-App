@@ -1,13 +1,18 @@
 import json
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 # from django.contrib.auth.forms import UserCreationForm
-from .forms import HouseForm, MyUserCreationForm, RoomForm
-from .models import House, User, Room, Device
+from .forms import HouseForm, MyUserCreationForm, RoomForm, DeviceForm
+from .models import House, User, Room, Device, DeviceData
+from .mqtt import client as mqtt_client
+import time
 
 
 # Create your views here.
@@ -65,12 +70,6 @@ def registerPage(request):
     return render(request, 'login_register.html', {'form': form})
 
 
-def automationPage(request):
-    houses = House.objects.all().filter(owner=request.user.id)
-    devices = Device.objects.all().filter(dashboard=True, room__house__owner=request.user.id)
-    context = {'houses': houses, 'devices': devices}
-    return render(request, 'home.html', context)
-
 @login_required(login_url='login')
 def home(request):
     # print(request.user)
@@ -78,6 +77,57 @@ def home(request):
     devices = Device.objects.all().filter(dashboard=True, room__house__owner=request.user.id)
     context = {'houses': houses, 'devices': devices}
     return render(request, 'home.html', context)
+
+
+@login_required(login_url='login')
+def settings(request):
+    if request.method == 'POST':
+        if request.GET.get('name') == 'true':
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            user = User.objects.get(username=request.user.username)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
+            print('change name')
+            return redirect('settings')
+        elif request.GET.get('password') == 'true':
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                print('change password')
+                return redirect('settings')
+            else:
+                messages.error(request, 'Invalid Password!')
+        elif request.GET.get('username') == 'true':
+            newusername = request.POST.get('username')
+            if User.objects.filter(username=newusername).exists():
+                messages.error(request, 'Username already taken!')
+            else:
+                user = User.objects.get(username=request.user.username)
+                user.username = newusername
+                user.save()
+                print('change username')
+                return redirect('settings')
+
+    passwordForm = PasswordChangeForm(request.user)
+    houses = House.objects.all().filter(owner=request.user.id)
+    context = {'houses': houses, 'devices': devices, 'password_form': passwordForm}
+    return render(request, 'settings.html', context)
+
+
+@login_required(login_url='login')
+def devices(request):
+    room = request.GET.get('room', None)
+    if room is not None:
+        alldevices = Device.objects.all().filter(room_id=room)
+        roomInstance = Room.objects.get(id=room)
+        context = {'room': roomInstance, 'devices': alldevices}
+    else:
+        alldevices = Device.objects.all().filter(dashboard=True, room__house__owner=request.user.id)
+        context = {'devices': alldevices}
+    return render(request, 'devices.html', context)
 
 
 @login_required(login_url='login')
@@ -122,7 +172,7 @@ def createHouse(request):
             room.save()
             return redirect('house', pk=room.id)
     houses = House.objects.all().filter(owner=request.user.id)
-    context = {'form': form, 'houses': houses}
+    context = {'form': form, 'houses': houses, 'create': True}
     return render(request, 'house_form.html', context)
 
 
@@ -196,6 +246,7 @@ def updateRoom(request, pk):
     context = {'form': form, 'houses': houses}
     return render(request, 'room_form.html', context)
 
+
 @login_required(login_url='login')
 def deleteRoom(request, pk):
     roomInstance = Room.objects.get(id=pk)
@@ -234,6 +285,71 @@ def deleteDevice(request, pk):
 
     if request.method == 'POST':
         device.delete()
-        redirect('house-room', pk=device.room.house.id, rpk=device.room.id)
+        return redirect('house-room', pk=device.room.house.id, rpk=device.room.id)
 
     return render(request, 'delete.html', {'obj': device, 'houses': houses})
+
+
+@csrf_exempt
+def connectDevice(request, key):
+    print("connectDevice")
+    print(key)
+    if request.method == 'POST':
+        device_config = json.loads(request.body)
+        connect_device = Device.objects.get(id=key)
+        if connect_device.password != device_config['password']:
+            raise Http404('Device password mismatch')
+        connect_device.type = device_config['type']
+        connect_device.save()
+        print(connect_device)
+        return HttpResponse('Connected')
+    return HttpResponse('Connected')
+
+
+def existsDevice(request, pk):
+    deviceInstance = get_object_or_404(Device, id=pk)
+    return HttpResponse('Exists')
+
+
+@login_required(login_url='login')
+def addDevice(request, pk):
+    if request.method == 'POST':
+        device_id = request.POST.get('id')
+        print(device_id)
+        deviceInstance = Device.objects.get(id=device_id)
+        form = DeviceForm(request.POST, instance=deviceInstance)
+        if form.is_valid():
+            form.save()
+            return redirect('house-room', pk=deviceInstance.room.house.id, rpk=deviceInstance.room.id)
+
+    device = Device.objects.create(room_id=pk)
+    form = DeviceForm(instance=device)
+    return render(request, 'device_form.html', {'form': form, 'device': device})
+
+
+@login_required(login_url='login')
+def cancelDevice(request, pk):
+    device = Device.objects.get(id=pk)
+    device.delete()
+    print(device)
+    return redirect('house-room', pk=device.room.house.id, rpk=device.room.id)
+
+
+@login_required(login_url='login')
+def updateDevice(request, pk):
+    device = Device.objects.get(id=pk)
+    form = DeviceForm(instance=device)
+    if request.method == 'POST':
+        form = DeviceForm(request.POST, instance=device)
+        if form.is_valid():
+            form.save()
+            return redirect('house-room', pk=device.room.house.id, rpk=device.room.id)
+
+    return render(request, 'device_form.html', {'form': form, 'device': device, 'type': 'update'})
+
+
+def controlDevice(request, pk):
+    message = request.GET.get('message', None)
+    mqtt_client.publish(f'/devices/control/{pk}', message)
+    time.sleep(0.3)
+    return redirect(request.META.get('HTTP_REFERER'))

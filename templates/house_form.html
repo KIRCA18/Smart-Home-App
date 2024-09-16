@@ -3,7 +3,7 @@
 {% block content %}
     <div>
         <form method="POST" action="" style="max-width: 400px">
-            <h3>Create/Update House</h3>
+            <h3>{% if create == True %}Add House{% else %}Update House{% endif %}</h3>
             {% csrf_token %}
             {% for field in form %}
                 <div class="mb-3">

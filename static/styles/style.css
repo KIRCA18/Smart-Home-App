@@ -85,9 +85,10 @@ button.secondary {
     text-wrap: nowrap;
     top: 50%;
     transform: translateY(-50%);
-    background: darkgray;
+    background: white;
     border-radius: 8px;
     padding: 8px;
+    color: black !important;
 }
 
 .sidebar .tooltip-nav::before {
@@ -99,8 +100,9 @@ button.secondary {
     left: 40px;
     border-radius: 1px;
     transform: rotate(45deg) translateY(-50%);
-    background: darkgray;
+    background: white;
     position: absolute;
+    color: black !important;
 }
 .sidebar:not(.show) .tooltip-nav:hover::after, .sidebar:not(.show) .tooltip-nav:hover::before {
     display: block;
@@ -123,7 +125,7 @@ button.secondary {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, calc(100%/4)));
+    grid-template-columns: repeat(auto-fit, minmax(200px, calc(100%/4)));
     gap: 1rem;
     grid-auto-flow: dense; /* Ensures that items fill gaps */
 }

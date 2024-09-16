@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 class MyUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
+        fields = ['first_name', 'last_name', 'username', 'password1', 'password2']
 
     def __init__(self, *args, **kwargs):
         super(MyUserCreationForm, self).__init__(*args, **kwargs)
@@ -37,3 +37,17 @@ class RoomForm(ModelForm):
         # Apply 'form-control' class to all fields
         for field_name, field in self.fields.items():
             field.widget.attrs.update({'class': 'form-control'})
+
+
+class DeviceForm(ModelForm):
+    class Meta:
+        model = Device
+        fields = ['name']
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceForm, self).__init__(*args, **kwargs)
+        # Apply 'form-control' class to all fields
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
+
+

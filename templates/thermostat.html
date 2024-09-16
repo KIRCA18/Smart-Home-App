@@ -7,84 +7,30 @@
         </svg>
         <p class="m-0 p-0">
             {{ device.name }}<br>
-            <small>{{ device.data.all.0.timestamp|timesince }} ago</small>
+            <small>{{ device.latest_data.timestamp|timesince }} ago</small>
         </p>
     </div>
     <div class="d-flex justify-content-between">
         <div class="d-flex justify-content-center flex-column">
-            <small>Current: </small>
-            <h2>{{ device.data.all.0.data.current_temperature }}C&deg;</h2>
+            <small>Temperature: </small>
+            <h2>{{ device.latest_data.data.current_temperature|floatformat:2 }}&deg;C</h2>
         </div>
-        <div class="d-flex flex-column align-items-center">
-            <a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                     fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                          d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"></path>
-                </svg>
-            </a>
-            <h2>{{ device.data.all.0.data.target_temperature }}C&deg;</h2>
-            <a>
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                     fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"></path>
-                </svg>
-            </a>
-        </div>
+{#        <div class="d-flex flex-column align-items-center">#}
+{#            <a>#}
+{#                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"#}
+{#                     fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">#}
+{#                    <path fill-rule="evenodd"#}
+{#                          d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"></path>#}
+{#                </svg>#}
+{#            </a>#}
+{#            <h2>{{ device.data.all.0.data.target_temperature }}&deg;C</h2>#}
+{#            <a>#}
+{#                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"#}
+{#                     fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">#}
+{#                    <path fill-rule="evenodd"#}
+{#                          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"></path>#}
+{#                </svg>#}
+{#            </a>#}
+{#        </div>#}
     </div>
-    {#                                <div style="width: 100%; position: relative">#}
-    {#                                    <canvas style="position: absolute; top: 0; left: 0; width: 100%; height: 100%" id="{{ device.id }}"></canvas>#}
-    {#                                </div>#}
-    {#                                <script>#}
-    {#                                    const id = {{ device.id }}#}
-    {#                                    const ctx = document.getElementById('{{ device.id }}');#}
-    {#                                    console.log(ctx)#}
-    {#                                    const data = JSON.parse(JSON.parse(document.getElementById('devicesData').textContent)).filter(d => d.device_id == id)[0];#}
-    {#                                    let temp = data.device_data.map(d => d.data.current_temperature)#}
-    {#                                    let target = data.device_data.map(d => d.data.target_temperature)#}
-    {#                                    let times = data.device_data.map(d => new Date(d.timestamp))#}
-    {#                                    console.log(times)#}
-    {#                                    console.log(temp)#}
-    {##}
-    {#                                    new Chart(ctx, {#}
-    {#                                        type: 'line',#}
-    {#                                        data: {#}
-    {#                                            labels: data.device_data.map(d => d.timestamp),#}
-    {#                                            datasets: [{#}
-    {#                                                label: 'Temperature',#}
-    {#                                                data: temp,#}
-    {#                                                fill: false,#}
-    {#                                                borderColor: 'rgb(75, 192, 192)',#}
-    {#                                                tension: 0.1#}
-    {#                                            }, {#}
-    {#                                                label: 'Target',#}
-    {#                                                data: target,#}
-    {#                                                fill: false,#}
-    {#                                                borderColor: 'rgb(232,27,182)',#}
-    {#                                                tension: 0.1#}
-    {#                                            }]#}
-    {#                                        },#}
-    {#                                        options: {#}
-    {#                                            scales: {#}
-    {#                                                x: {#}
-    {#                                                    type: 'time',#}
-    {#                                                    time: {#}
-    {#                                                        unit: 'minute'#}
-    {#                                                    },#}
-    {#                                                    title: {#}
-    {#                                                        display: true,#}
-    {#                                                        text: 'Time'#}
-    {#                                                    }#}
-    {#                                                },#}
-    {#                                                y: {#}
-    {#                                                    title: {#}
-    {#                                                        display: true,#}
-    {#                                                        text: 'Value'#}
-    {#                                                    }#}
-    {#                                                }#}
-    {#                                            }#}
-    {#                                        }#}
-    {#                                    });#}
-    {#                                </script>#}
 </div>

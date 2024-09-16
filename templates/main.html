@@ -10,8 +10,9 @@
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    {% block head %}{% endblock head %}
     <link rel="stylesheet" type="text/css" href="{% static 'styles/style.css' %}">
-    <script defer src="{% static 'scripts/dialog.js' %}"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
 </head>
 <body>
 {% include 'sidebar.html' %}

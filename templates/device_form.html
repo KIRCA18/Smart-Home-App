@@ -1,0 +1,13 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <p>ID: {{ device.id }}</p>
+    <p>Password: <span style="font-family: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace">{{ device.password }}</span></p>
+    <form action="?device={{ device.id }}" method="post">
+        {% csrf_token %}
+        <input hidden value="{{ device.id }}" name="id"/>
+        {{ form.as_p }}
+        <button class="btn btn-primary" type="submit">Save</button>
+        {% if type and type == 'update' %}<a href="{{ request.META.HTTP_REFERER }}" class="btn btn-danger">Cancel</a>{% else %}<a href="{% url 'cancel-device' pk=device.id %}" class="btn btn-danger">Cancel</a>{% endif %}
+    </form>
+{% endblock content %}

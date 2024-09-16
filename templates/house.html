@@ -2,11 +2,8 @@
 
 {% block content %}
     <script src="https://cdn.jsdelivr.net/npm/luxon@1.8.2/build/global/luxon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/0.2.1/chartjs-adapter-luxon.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/0.2.1/chartjs-adapter-luxon.min.js"></script>
 
-    <div class="d-flex align-items-center gap">
+    <div class="d-flex align-items-center gap flex-wrap">
         <div>
             <p class="m-0">{{ house.name }}</p>
             <small>{{ house.address }}</small>
@@ -32,24 +29,24 @@
 
     {% include 'house_header.html' %}
 
-    <div class="d-flex justify-content-between my-2">
+    <div class="d-flex justify-content-between my-2 flex-wrap">
         <h3>Devices</h3>
-        <button class="btn btn-outline-primary">
+        <a href="{% url 'add-device' pk=room.id %}" class="btn btn-outline-primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg"
                  viewBox="0 0 16 16">
                 <path fill-rule="evenodd"
                       d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"></path>
             </svg>
             Add Device
-        </button>
+        </a>
     </div>
-    {% include 'devices.html' with devices=room.device_set.all %}
+    {% include 'devices.html' with devices=room.device_set.all room=room %}
 
     <div class="modal fade" id="edit_modal" tabindex="-1" aria-labelledby="edit_modal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit {{ house }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Edit {{ house.name }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

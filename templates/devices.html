@@ -1,11 +1,14 @@
-<div class="grid-container">
+<div hx-get="{% url 'devices' %}{% if room %}?room={{ room.id }}{% endif %}" hx-trigger="every 2s" hx-swap="outerHTML"
+     class="grid-container">
     {% for device in devices %}
         {#            <div class="card grid-item {% if device.type == 'thermostat' or device.type == 'humidity' %}large{% endif %}"#}
         {#                 style="box-shadow: 0 0 6px 0 {% if device.state == 0 %} red {% else %} green {% endif %};#}
         {#                         outline: 1px solid {% if device.state == 0 %} red {% else %} green {% endif %}">#}
+{#        <div class="card grid-item p-2"#}
+{#             style="position: relative; box-shadow: 0 0 6px 0 {% if device.state == 0 %} red {% else %} green {% endif %};#}
+{#                     outline: 1px solid {% if device.state == 0 %} red {% else %} green {% endif %}">#}
         <div class="card grid-item p-2"
-             style="position: relative; box-shadow: 0 0 6px 0 {% if device.state == 0 %} red {% else %} green {% endif %};
-                     outline: 1px solid {% if device.state == 0 %} red {% else %} green {% endif %}">
+             style="position: relative;">
             <div style="position: absolute; top: 5px; right: 5px;">
                 <a class="text-decoration-none" href="{% url 'toggle-device' device.id %}">
                     {% if device.dashboard %}
@@ -19,6 +22,15 @@
                             <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"></path>
                         </svg>
                     {% endif %}
+                </a>
+
+                <a class="text-decoration-none" href="{% url 'update-devices' pk=device.id %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                         class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                        <path fill-rule="evenodd"
+                              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path>
+                    </svg>
                 </a>
 
                 <a class="text-decoration-none" href="{% url 'delete-device' device.id %}">
@@ -45,6 +57,9 @@
                     {% endif %}
                     {% if device.type == 'smart_lock' %}
                         {% include 'smart_lock.html' with device=device %}
+                    {% endif %}
+                    {% if device.type == 'smart_plug' %}
+                        {% include 'smart_plug.html' with device=device %}
                     {% endif %}
                 {% else %}
                     <p>NO DATA!</p>
