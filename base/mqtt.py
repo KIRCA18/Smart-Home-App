@@ -17,6 +17,8 @@ def on_connect(mqtt_client, userdata, flags, rc):
 def on_message(mqtt_client, userdata, msg):
     alldata = json.loads(msg.payload)
     device = Device.objects.get(id=alldata['id'])
+    if device is None:
+        return
     if device.latest_data is not None:
         DeviceData.objects.all().filter(device=device).exclude(id=device.latest_data.id).delete()
     deviceData = DeviceData.objects.create(device=device, data=alldata['data'])
@@ -39,8 +41,9 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 client.username_pw_set('smarthomeapp', 'a1s2d3')
+client.tls_set()
 client.connect(
-    host="mqtt-broker",
-    port=1883,
-    keepalive=60
+    host="19f5d0c9781248a68d2499ce86399651.s1.eu.hivemq.cloud",
+    port=8883,
+    keepalive=560
 )

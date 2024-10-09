@@ -294,6 +294,16 @@ def deleteDevice(request, pk):
 def connectDevice(request, key):
     print("connectDevice")
     print(key)
+    if request.method == 'GET':
+        device_type = request.GET.get('type')
+        device_password = request.GET.get('password')
+        connect_device = Device.objects.get(id=key)
+        if connect_device.password != device_password:
+            raise Http404('Device password mismatch')
+        connect_device.type = device_type
+        connect_device.save()
+        return HttpResponse('Connected')
+
     if request.method == 'POST':
         device_config = json.loads(request.body)
         connect_device = Device.objects.get(id=key)

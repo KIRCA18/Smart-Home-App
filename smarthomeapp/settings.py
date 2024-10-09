@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-&x^u9-*a55k_7hd@e*^ay44aoe1dhm++qb9-g53n#wj7v@sf1s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.88.253', '127.0.0.1', 'mqtt-broker']
+ALLOWED_HOSTS = ['127.0.0.1', 'mqtt-broker.local', 'mqtt-broker', '192.168.88.254', '192.168.0.20', '.vercel.app']
 
 
 # Application definition
