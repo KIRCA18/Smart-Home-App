@@ -1,0 +1,22 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <script defer src="{% static '/scripts/room_menu.js' %}" ></script>
+    <div>
+        <div class="d-flex justify-content-between align-items-center" style="margin-top: 16px;">
+            <div>
+                <h3 style="margin-bottom: 0">Room Management</h3>
+                <span>{{ rooms|length }} rooms</span> <span>{{ devices }} device{{ devices|pluralize }}</span> <span>{{ usage }} kW total usage</span>
+            </div>
+            <div>
+                <a href="{% url 'create-room' pk=selected_house.id %}" class="btn btn-primary">+ Add Room</a>
+                <a href="{% url 'create-room' pk=selected_house.id %}?type=garden" class="btn">+ Add Garden</a>
+            </div>
+        </div>
+        <div class="grid-container" style="margin-top: 16px">
+            {% for room in rooms %}
+                {% include 'room_widget.html' with room=room %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}

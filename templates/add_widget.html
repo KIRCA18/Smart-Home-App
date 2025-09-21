@@ -1,0 +1,39 @@
+<div class="modal fade" id="add_widget_modal" tabindex="-1" aria-labelledby="add_widget_modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Widget</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select widget</label>
+                    <select class="form-control" id="select-add-widget">
+                        {% for widget in widgets %}
+                            <option data-type="widget" value="{{ widget.id }}">{{ widget.name }}</option>
+                        {% endfor %}
+                        {% for device in devices %}
+                            <option data-type="device" value="{{ device.id }}">{{ device.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button id="button-add-widget" class="btn btn-primary">Add Widget</button>
+                <script>
+                    const addWidgetButton = document.getElementById("button-add-widget")
+                    const addWidgetSelect = document.getElementById("select-add-widget")
+
+                    addWidgetButton.addEventListener("click", (e) => {
+                        e.preventDefault()
+
+                        const url = new URL("{% url 'add-widget' pk=selected_house.id %}", window.location.origin)
+                        const selectedOption = addWidgetSelect.options[addWidgetSelect.selectedIndex];
+                        url.searchParams.set("type", selectedOption.dataset.type)
+                        url.searchParams.set("id", selectedOption.value)
+
+                        window.location.href = url.toString()
+                    })
+                </script>
+            </div>
+        </div>
+    </div>
+</div>

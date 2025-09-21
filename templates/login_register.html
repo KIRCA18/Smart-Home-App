@@ -10,6 +10,7 @@
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'styles/style.css' %}">
 </head>
 <body>
@@ -38,7 +39,7 @@
     </div>
 {% else %}
     <div class="container-fluid d-flex align-items-center justify-content-center" style="height: 100vh">
-        <form method="POST" action="" style="max-width: 400px" class="d-flex flex-column container">
+        <form method="POST" enctype="multipart/form-data" action="" style="max-width: 400px" class="d-flex flex-column container">
             <h3>Register</h3>
             {% csrf_token %}
             {% for field in form %}

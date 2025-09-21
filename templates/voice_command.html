@@ -1,0 +1,57 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <h1>Voice Command Demo</h1>
+    <button class="btn btn-primary" id="startBtn">Start Listening</button>
+    <p id="status"></p>
+
+    <script>
+        const startBtn = document.getElementById("startBtn");
+        console.log(startBtn)
+        const status = document.getElementById("status");
+
+        let recognition;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+        } else if ('SpeechRecognition' in window) {
+            recognition = new SpeechRecognition();
+        } else {
+            alert("Your browser does not support Speech Recognition");
+        }
+
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        {#recognition.continuous = true;#}
+
+        recognition.onstart = () => {
+            status.innerText = "Listening...";
+        };
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            status.innerText = "You said: " + text;
+
+            fetch(`{% url 'process-command' pk=selected_house.id %}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({text})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    status.innerText = data.message;
+                });
+        };
+
+        recognition.onerror = (event) => {
+            status.innerText = "Error: " + event.error;
+        };
+
+        startBtn.addEventListener("click", (e) => {
+            console.log("click")
+            recognition.start();
+        })
+
+    </script>
+
+{% endblock %}

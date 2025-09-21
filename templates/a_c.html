@@ -1,0 +1,59 @@
+<div style="background: #EDFBFF; padding: 16px; border-radius: 16px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px">
+        <div style="display: flex; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: center; background: #18AFEC; padding: 8px; border-radius: 8px">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white"
+                     class="bi bi-thermometer-snow" viewBox="0 0 16 16">
+                    <path d="M5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585A1.5 1.5 0 0 1 5 12.5"></path>
+                    <path d="M1 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0zM3.5 1A1.5 1.5 0 0 0 2 2.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0L5 10.486V2.5A1.5 1.5 0 0 0 3.5 1m5 1a.5.5 0 0 1 .5.5v1.293l.646-.647a.5.5 0 0 1 .708.708L9 5.207v1.927l1.669-.963.495-1.85a.5.5 0 1 1 .966.26l-.237.882 1.12-.646a.5.5 0 0 1 .5.866l-1.12.646.884.237a.5.5 0 1 1-.26.966l-1.848-.495L9.5 8l1.669.963 1.849-.495a.5.5 0 1 1 .258.966l-.883.237 1.12.646a.5.5 0 0 1-.5.866l-1.12-.646.237.883a.5.5 0 1 1-.966.258L10.67 9.83 9 8.866v1.927l1.354 1.353a.5.5 0 0 1-.708.708L9 12.207V13.5a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5"></path>
+                </svg>
+            </div>
+            <div>
+                <h5 style="margin: 0;">{{ device.name }}</h5>
+                <small>{{ device.room.name }}</small>
+            </div>
+        </div>
+        <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 8px">
+        <h3>26&deg;C</h3>
+        <small>Target Temperature</small>
+        <input type="range" min="16" max="32" value="26">
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 8px; grid-auto-rows: minmax(80px, auto);">
+        <div style="background: white; padding: 8px; border-radius: 8px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer"
+                 viewBox="0 0 16 16">
+                <path d="M8 14a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path>
+                <path d="M8 0a2.5 2.5 0 0 0-2.5 2.5v7.55a3.5 3.5 0 1 0 5 0V2.5A2.5 2.5 0 0 0 8 0M6.5 2.5a1.5 1.5 0 1 1 3 0v7.987l.167.15a2.5 2.5 0 1 1-3.333 0l.166-.15z"></path>
+            </svg>
+            <span>Current Temperature</span><br>
+            <span style="background: #00BE79; color: white; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 8px">23&deg;C</span>{# handle connection logic #}
+        </div>
+
+        <div style="background: white; padding: 8px; border-radius: 8px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-wifi"
+                 viewBox="0 0 16 16">
+                <path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.44 12.44 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.52.52 0 0 0 .668.05A11.45 11.45 0 0 1 8 4c2.507 0 4.827.802 6.716 2.164.205.148.49.13.668-.049"></path>
+                <path d="M13.229 8.271a.482.482 0 0 0-.063-.745A9.46 9.46 0 0 0 8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065A8.46 8.46 0 0 1 8 7a8.46 8.46 0 0 1 4.576 1.336c.206.132.48.108.653-.065m-2.183 2.183c.226-.226.185-.605-.1-.75A6.5 6.5 0 0 0 8 9c-1.06 0-2.062.254-2.946.704-.285.145-.326.524-.1.75l.015.015c.16.16.407.19.611.09A5.5 5.5 0 0 1 8 10c.868 0 1.69.201 2.42.56.203.1.45.07.61-.091zM9.06 12.44c.196-.196.198-.52-.04-.66A2 2 0 0 0 8 11.5a2 2 0 0 0-1.02.28c-.238.14-.236.464-.04.66l.706.706a.5.5 0 0 0 .707 0l.707-.707z"></path>
+            </svg>
+            <<span>Connection</span><br>
+            <span style="background: #00BE79; color: white; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 8px">{{ device.status }}</span>
+            {% if device.status == 'offline' %}
+                <span style="padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 8px">{{ device.last_seen|timesince }}</span> {% endif %}
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 8px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-power"
+                 viewBox="0 0 16 16">
+                <path d="M7.5 1v7h1V1z"></path>
+                <path d="M3 8.812a5 5 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812"></path>
+            </svg>
+            <span>Status</span><br>
+            <span style="background: #00BE79; color: white; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 8px">On</span>{# handle state logic #}
+        </div>
+    </div>
+</div>
+

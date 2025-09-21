@@ -1,0 +1,22 @@
+{% for widget in dashboard.widgets.all %}
+    {% include widget.html %}
+{% endfor %}
+{% for device in dashboard.devices.all %}
+    {% if device.device.view != '' %}
+        {% include device.device.view with device=device location="Dashboard" %}
+    {% endif %}
+{% endfor %}
+
+<script>
+    (() => {
+        let room_menu = document.querySelectorAll(".collapsable-menu")
+
+        room_menu.forEach(val => {
+            val.addEventListener("click", (e) => {
+                let options = val.parentNode.querySelector(".collapsable-options")
+                let expanded = options.style.display == "flex"
+                options.style.display = expanded ? "none" : "flex"
+            })
+        })
+    })()
+</script>

@@ -1,12 +1,12 @@
 from django.forms import ModelForm
-from .models import User, House, Room, Device
+from .models import User, House, Room, Device, RoomDevice
 from django.contrib.auth.forms import UserCreationForm
 
 
 class MyUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'password1', 'password2']
+        fields = ['first_name', 'last_name', 'username', 'password1', 'password2', 'avatar']
 
     def __init__(self, *args, **kwargs):
         super(MyUserCreationForm, self).__init__(*args, **kwargs)
@@ -18,7 +18,7 @@ class MyUserCreationForm(UserCreationForm):
 class HouseForm(ModelForm):
     class Meta:
         model = House
-        fields = ['name', 'address']
+        fields = ['name', 'country', 'city', 'street']
 
     def __init__(self, *args, **kwargs):
         super(HouseForm, self).__init__(*args, **kwargs)
@@ -39,15 +39,27 @@ class RoomForm(ModelForm):
             field.widget.attrs.update({'class': 'form-control'})
 
 
-class DeviceForm(ModelForm):
+class RoomDeviceForm(ModelForm):
     class Meta:
-        model = Device
-        fields = ['name']
+        model = RoomDevice
+        fields = ['name', 'room']
 
     def __init__(self, *args, **kwargs):
-        super(DeviceForm, self).__init__(*args, **kwargs)
+        super(RoomDeviceForm, self).__init__(*args, **kwargs)
         # Apply 'form-control' class to all fields
         for field_name, field in self.fields.items():
             field.widget.attrs.update({'class': 'form-control'})
+
+
+# class DeviceForm(ModelForm):
+#     class Meta:
+#         model = Device
+#         fields = ['name']
+#
+#     def __init__(self, *args, **kwargs):
+#         super(DeviceForm, self).__init__(*args, **kwargs)
+#         # Apply 'form-control' class to all fields
+#         for field_name, field in self.fields.items():
+#             field.widget.attrs.update({'class': 'form-control'})
 
 

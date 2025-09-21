@@ -1,0 +1,76 @@
+<div style="padding: 16px; background: white; border-radius: 8px">
+    <div style="display: flex; justify-content: space-between">
+        <div>
+            <h4>{{ group.name }}</h4>
+            <p>{% if group.description|length > 0 %}{{ group.description }}{% else %}No description!{% endif %}</p>
+        </div>
+        <div class="collapsable-menu" style="position: relative">
+            <div style="background: rgba(200 200 200 / 0.6); border-radius: 8px; padding: 8px; display: flex; justify-content: center; align-items: center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-three-dots-vertical"
+                     viewBox="0 0 16 16">
+                    <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"></path>
+                </svg>
+            </div>
+
+            <div class="collapsable-options"
+                 style="position: absolute; gap: 4px; right: 0; padding: 8px; display: none; background: white; border-radius: 8px; background: rgba(240 240 240 / 0.95); flex-direction: column">
+                <a class="btn btn-light" href="{% url 'update-group' pk=group.id %}">Update Group</a>
+                <a class="btn btn-light" href="{% url 'delete-group' pk=group.id %}">Delete Group</a>
+            </div>
+        </div>
+    </div>
+    <h5>Devices ({{ group.devices.all|length }})</h5>
+    {% for device in group.devices.all %}
+        <div style="display: flex; justify-content: space-between; align-items: center">
+            <small>{{ device.name }}</small>
+            <small>{{ device.status }}</small>
+        </div>
+    {% endfor %}
+    <hr>
+    <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(150px, calc(100% / 4)))">
+        {% for action in group.actions %}
+            {% if action.name == "Turn On" %}
+                <a style="text-align: center; padding: 8px; border: 1px solid lightgrey; border-radius: 12px; text-decoration: none"
+                   href="{% url 'house-groups' pk=selected_house.id %}?group={{ group.id }}&action=1">
+                    Turn On
+                </a>
+            {% elif action.name == "Turn Off" %}
+                <a style="text-align: center; padding: 8px; border: 1px solid lightgrey; border-radius: 12px; text-decoration: none"
+                   href="{% url 'house-groups' pk=selected_house.id %}?group={{ group.id }}&action=2">
+                    Turn Off
+                </a>
+            {% elif action.name == "Set Temperature" %}
+                <div style="grid-column: span 2">
+                    <label>Temperature</label>
+                    <input type="number" min="0" max="100" id="temperature-{{ group.id }}"/>
+                    <button class="btn btn-primary">set</button>
+                </div>
+            {% elif action.name == "Set Brightness" %}
+                <div style="grid-column: span 2">
+                    <label>Brightness</label>
+                    <input class="form-control" style="display: inline; width: fit-content" type="number" min="0"
+                           max="100"
+                           id="brightness-{{ group.id }}"/>
+                    <button id="brightness-btn-{{ group.id }}" class="btn btn-primary">set</button>
+                    <script>
+                        const button = document.getElementById("brightness-btn-{{ group.id }}")
+                        const input = document.getElementById("brightness-{{ group.id }}")
+
+                        button.addEventListener("click", (e) => {
+                            e.preventDefault()
+
+                            const url = new URL(window.location.href)
+
+                            url.searchParams.set("group", "{{ group.id }}")
+                            url.searchParams.set("action", "4")
+                            url.searchParams.set("brightness", input.value)
+
+                            window.location.href = url.toString()
+                        })
+                    </script>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center">
+        <div>
+            <h1>House Members</h1>
+            <small>{{ members|length }} member{{ members|length|pluralize }}</small>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#invite_modal">+ Invite Member</button>
+    </div>
+    <br>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+        {% for member in members %}
+            {% include 'member.html' with member=member %}
+        {% endfor %}
+    </div>
+{% endblock content %}

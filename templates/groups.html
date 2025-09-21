@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center">
+        <div>
+            <h1>Device Groups</h1>
+            <small>{{ groups|length }} total group{{ groups|length|pluralize }}</small>
+        </div>
+        <a href="{% url 'create-group' pk=selected_house.id %}" class="btn btn-primary">+ Create Group</a>
+    </div>
+    <br>
+    <div class="grid-container" style="margin-top: 16px">
+        {% for group in groups %}
+            {% include 'group.html' with group=group %}
+        {% endfor %}
+    </div>
+    <script>
+        let room_menu = document.querySelectorAll(".collapsable-menu")
+
+        room_menu.forEach(val => {
+            val.addEventListener("click", (e) => {
+                let options = val.parentNode.querySelector(".collapsable-options")
+                let expanded = options.style.display == "flex"
+                options.style.display = expanded ? "none" : "flex"
+            })
+        })
+    </script>
+{% endblock content %}

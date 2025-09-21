@@ -12,18 +12,31 @@
     {% bootstrap_javascript %}
     {% block head %}{% endblock head %}
     <link rel="stylesheet" type="text/css" href="{% static 'styles/style.css' %}">
-    <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
+    <script src="https://unpkg.com/htmx.org@2.0.2"
+            integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ"
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 </head>
 <body>
 {% include 'sidebar.html' %}
 <script defer src="{% static 'scripts/sidebar.js' %}"></script>
+<script defer src="{% static 'scripts/dropdown.js' %}"></script>
 <div class="main-content sidebar-expanded container-fluid p-3">
+    {% include 'header.html' %}
     {% if messages %}
         {% include 'message.html' with messages=messages %}
     {% endif %}
     {% block content %}
 
     {% endblock %}
+    {% if selected_house %}
+        {% include 'invite_member.html' %}
+        {% include 'add_device.html' %}
+    {% endif %}
+    {% include 'invitations.html' %}
+
 </div>
 </body>
 </html>

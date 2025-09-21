@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center">
+        <div>
+            <h1>Automation</h1>
+            <small>Create smart automations to control your devices automatically</small>
+        </div>
+        <a href="{% url 'add-automation' pk=selected_house.id %}" class="btn btn-primary">+ New Automation</a>
+    </div>
+    <br>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+        {% for automation in automations %}
+            {% include 'automation_widget.html' with automation=automation %}
+        {% endfor %}
+    </div>
+    <script>
+        let room_menu = document.querySelectorAll(".collapsable-menu")
+
+        room_menu.forEach(val => {
+            val.addEventListener("click", (e) => {
+                let options = val.parentNode.querySelector(".collapsable-options")
+                let expanded = options.style.display == "flex"
+                options.style.display = expanded ? "none" : "flex"
+            })
+        })
+    </script>
+{% endblock content %}

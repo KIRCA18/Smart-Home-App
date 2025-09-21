@@ -1,0 +1,45 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <form method="POST" action="" style="max-width: 400px">
+        {% csrf_token %}
+        <h3>Add Device</h3>
+        <label class="form-label">Name</label>
+        <input required class="form-control" name="name" placeholder="Main Light">
+        <label class="form-label">Room</label>
+        <select required class="form-control" name="room"
+                style="outline: none; border: none; padding: 8px 16px; background: #FAFAFC; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px">
+            {% for room in selected_house.rooms.all %}
+                <option value="{{ room.id }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label">MAC address</label>
+        <input id="mac" readonly required class="form-control" name="mac" placeholder="12:AB:03:AF:94:D8">
+        <label class="form-label">Token</label>
+        <input id="token" readonly required class="form-control" name="token" placeholder="ABC123"><br>
+        <div id="reader" style="width:300px"></div>
+        <button id="submit-button" type="submit" disabled class="btn btn-primary w-100">Submit</button>
+    </form>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan result: ${decodedText}`);
+            html5QrCode.stop()
+            let fields = decodedText.split("&")
+            let mac = fields[0].split("=")[1]
+            let token = fields[1].split("=")[1]
+            let macInput = document.getElementById("mac")
+            let tokenInput = document.getElementById("token")
+            document.getElementById("submit-button").disabled = false
+            macInput.value = mac
+            tokenInput.value = token
+        }
+
+        const html5QrCode = new Html5Qrcode("reader", {formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]});
+        html5QrCode.start(
+            {facingMode: "environment"},
+            {fps: 10, qrbox: 250},
+            onScanSuccess
+        );
+    </script>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <form method="POST" action="" style="max-width: 400px">
+        {% csrf_token %}
+        <h3>Add Device</h3>
+        <label class="form-label">Name</label>
+        <input required class="form-control" name="name" placeholder="Main Light">
+        <label class="form-label" >Room</label>
+        <select required class="form-control" name="room"
+                style="outline: none; border: none; padding: 8px 16px; background: #FAFAFC; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px">
+            {% for room in selected_house.rooms.all %}
+                <option value="{{ room.id }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label">MAC address</label>
+        <input required class="form-control" name="mac" placeholder="12:AB:03:AF:94:D8">
+        <label class="form-label">Token</label>
+        <input required class="form-control" name="token" placeholder="ABC123"><br>
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+{% endblock %}

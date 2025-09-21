@@ -1,0 +1,602 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <h3>Create new automation</h3>
+    <form id="automation-form" method="POST" action="" style="max-width: 800px">
+        {% csrf_token %}
+        <input type="hidden" name="trigger_object" id="trigger-object-input">
+        <input type="hidden" name="operator_object" id="operator-object-input">
+        <input type="hidden" name="action_object" id="action-object-input">
+        <label class="form-label">Name</label>
+        <input required name="name" class="form-control">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control"></textarea>
+        <hr>
+        <h4>Triggers</h4>
+        <div>
+            <button class="btn btn-light" id="add_trigger_btn">+ Add Trigger</button>
+        </div>
+        <hr>
+        <h4>Actions</h4>
+        <button class="btn btn-light" id="add_action_btn">+ Add Action</button>
+        <br><br>
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+    <script>
+        let triggerObject = {}
+        let triggerCounter = 0
+        let actionObject = {}
+        let actionCounter = 0
+        const addActionBtn = document.getElementById("add_action_btn")
+        const addTriggerBtn = document.getElementById("add_trigger_btn")
+        const form = document.getElementById("automation-form")
+        const triggerTypes = [
+            {% for condition in condition_types %}
+                "{{ condition }}"
+                {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+        const devices = [
+            {% for device in devices %}
+                {
+                    id: {{ device.id }},
+                    name: "{{ device.name|escapejs }}",
+                    actions: [
+                        {% for action in device.device.type.actions.all %}
+                            {
+                                id: {{ action.id }},
+                                name: "{{ action.name }}"
+                            }
+                            {% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    signals: [
+                        {% for action in device.device.type.signals.all %}
+                            {
+                                id: {{ action.id }},
+                                name: "{{ action.name }}"
+                            }
+                            {% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    state: [
+                        {% for state in device.device.state_schema.all %}
+                            {
+                                id: {{ state.id }},
+                                field: "{{ state.field }}",
+                                data_type: "{{ state.data_type }}"
+                            }
+                            {% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const actions = [
+            {% for action in actions %}
+                {
+                    id: {{ action.id }},
+                    name: "{{ action.name|escapejs }}",
+                    parameters_schema: "{{ action.parameters_schema|escapejs }}",
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const groups = [
+            {% for group in groups %}
+                {
+                    id: {{ group.id }},
+                    name: "{{ group.name|escapejs }}",
+                    actions: [
+                        {% for action in group.actions %}
+                            {
+                                id: {{ action.id }},
+                                name: "{{ action.name }}"
+                            }
+                            {% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const states = [
+            {% for state in states %}
+                {
+                    id: {{ state.id }},
+                    field: "{{ state.field }}",
+                    data_type: "{{ state.data_type }}"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const signals = [
+            {% for signal in signals %}
+                {
+                    id: {{ signal.id }},
+                    name: "{{ signal.name }}"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const WEATHER_CONDITIONS = [
+            ['sunny', 'Sunny'],
+            ['cloudy', 'Cloudy'],
+            ['rainy', 'Rainy'],
+            ['snowy', 'Snowy'],
+            ['stormy', 'Stormy'],
+            ['foggy', 'Foggy'],
+        ]
+        console.log(actions)
+        addActionBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.currentTarget.insertAdjacentElement("beforebegin", generateActionFields())
+        })
+        addTriggerBtn.addEventListener("click", (e) => {
+            e.preventDefault()
+            if (Object.keys(triggerObject).length > 0) {
+                e.currentTarget.insertAdjacentElement("beforebegin", generateOperatorField())
+            }
+            e.currentTarget.insertAdjacentElement("beforebegin", generateTriggerFields())
+        })
+
+        function generateOperatorField() {
+            const operatorSelect = document.createElement("select")
+            operatorSelect.dataset.type = "logic_operator"
+            operatorSelect.classList.add("form-control", "operator")
+            operatorSelect.style.maxWidth = "100px"
+            operatorSelect.style.marginBottom = "8px"
+            operatorSelect.innerHTML = `<option value="||">OR</option><option value="&&">AND</option>`
+            return operatorSelect
+        }
+
+        function capitalize(stringArr) {
+            return stringArr.map(string => string.charAt(0).toUpperCase() + string.slice(1)).join(" ")
+        }
+
+        function generateTriggerFields() {
+            triggerObject[`${triggerCounter}`] = {
+                leftBrackets: "",
+                rightBrackets: "",
+                triggerType: "",
+                operator: "",
+                device: "",
+                state: "",
+                value: "",
+                action: "",
+                when: "",
+                weatherCondition: "",
+                daysOfWeek: [false, false, false, false, false, false, false],
+                specificDate: ""
+            }
+            let superWrapper = document.createElement("div")
+            superWrapper.dataset.trigger_id = `${triggerCounter}`
+            let btnDeleteTrigger = document.createElement("button")
+            btnDeleteTrigger.dataset.trigger_id = `${triggerCounter}`
+            btnDeleteTrigger.classList.add("btn", "btn-danger")
+            btnDeleteTrigger.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+</svg>`
+            btnDeleteTrigger.addEventListener("click", (e) => {
+                e.preventDefault()
+                delete triggerObject[e.currentTarget.dataset.trigger_id]
+                console.log(triggerObject)
+                if (superWrapper.previousElementSibling != null && superWrapper.previousElementSibling.dataset.type == "logic_operator") {
+                    superWrapper.previousElementSibling.remove()
+                } else if (superWrapper.nextElementSibling != null && superWrapper.nextElementSibling.dataset.type == "logic_operator") {
+                    superWrapper.nextElementSibling.remove()
+                }
+                console.log(triggerObject)
+                superWrapper.remove()
+            })
+            let openBracketBtn = document.createElement("button")
+            openBracketBtn.classList.add("btn", "btn-primary")
+            openBracketBtn.innerText = "("
+            openBracketBtn.dataset.trigger_id = `${triggerCounter}`
+            openBracketBtn.addEventListener("click", (e) => {
+                e.preventDefault()
+                openBracketBtn.insertAdjacentHTML("afterend", `<span>(</span>`)
+                triggerObject[e.currentTarget.dataset.trigger_id]["leftBrackets"] += "("
+            })
+            let closedBracketBtn = document.createElement("button")
+            closedBracketBtn.classList.add("btn", "btn-primary")
+            closedBracketBtn.innerText = ")"
+            closedBracketBtn.dataset.trigger_id = `${triggerCounter}`
+            closedBracketBtn.addEventListener("click", (e) => {
+                e.preventDefault()
+                closedBracketBtn.insertAdjacentHTML("beforebegin", `<span>)</span>`)
+                triggerObject[e.currentTarget.dataset.trigger_id]["rightBrackets"] += ")"
+            })
+            let wrapper = document.createElement("div")
+            wrapper.dataset.trigger_id = `${triggerCounter}`
+            superWrapper.style = "display: flex; align-items: center; gap: 4px"
+            superWrapper.insertAdjacentElement("beforeend", openBracketBtn)
+            superWrapper.insertAdjacentElement("beforeend", wrapper)
+            superWrapper.insertAdjacentElement("beforeend", closedBracketBtn)
+            superWrapper.insertAdjacentElement("beforeend", btnDeleteTrigger)
+            wrapper.style = "flex-grow: 1; background: #FFFFFF; border-radius: 8px; padding: 8px;  border: 1px solid lightgray; margin-bottom: 8px; display: flex; gap: 4px; align-items: center"
+            let triggerTypeLabel = document.createElement("label")
+            triggerTypeLabel.classList.add("form-label")
+            triggerTypeLabel.dataset.trigger_id = `${triggerCounter}`
+            triggerTypeLabel.innerHTML = "Trigger Type"
+            let fieldsWrapper = document.createElement("div")
+            fieldsWrapper.style = "display: flex; gap: 4px; align-items: center"
+            fieldsWrapper.dataset.trigger_id = `${triggerCounter}`
+            let triggerTypeSelect = document.createElement("select")
+            triggerTypeSelect.classList.add("form-control")
+            triggerTypeSelect.style.maxWidth = "200px"
+            triggerTypeSelect.dataset.trigger_id = `${triggerCounter}`
+            triggerTypeSelect.innerHTML += `<option disabled selected>Select Trigger Type</option>`
+            triggerTypes.forEach(trigger => {
+                triggerTypeSelect.innerHTML += `<option value="${trigger}">${capitalize(trigger.split("_"))}</option>`
+            })
+            triggerTypeSelect.addEventListener("change", (e) => {
+                fieldsWrapper.innerHTML = ""
+                triggerObject[e.target.dataset.trigger_id]["triggerType"] = e.target.value
+                console.log(triggerObject)
+                if (e.target.value == "schedule") {
+                    let span = document.createElement("span")
+                    span.dataset.trigger_id = e.target.dataset.trigger_id
+                    span.innerHTML = `at`
+                    let timePicker = document.createElement("input")
+                    timePicker.classList.add("form-control")
+                    timePicker.type = "time"
+                    timePicker.dataset.trigger_id = e.target.dataset.trigger_id
+                    timePicker.addEventListener("input", (e) => {
+                        triggerObject[e.target.dataset.trigger_id]["value"] = e.target.value
+                        console.log(triggerObject[e.target.dataset.trigger_id])
+                    })
+                    let repeatSelect = document.createElement("select")
+                    repeatSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                    repeatSelect.classList.add("form-control")
+                    repeatSelect.innerHTML = `<option disabled selected>Repeat Type</option><option value="daily">Days of week</option><option value="specific_date">Specific Date</option>`
+                    repeatSelect.addEventListener("change", (e) => {
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        if (e.target.value == "daily") {
+                            let weekDays = [[0, 'Monday'], [1, 'Tuesday'], [2, 'Wednesday'], [3, 'Thursday'], [4, 'Friday'], [5, 'Saturday'], [6, 'Sunday']]
+                            const div = document.createElement("div")
+                            for (let day of weekDays) {
+                                let weekDayCheckbox = document.createElement("input")
+                                weekDayCheckbox.type = "checkbox"
+                                weekDayCheckbox.dataset.trigger_id = e.target.dataset.trigger_id
+                                weekDayCheckbox.dataset.id = day[0]
+                                weekDayCheckbox.addEventListener("input", (e) => {
+                                    triggerObject[e.target.dataset.trigger_id]["daysOfWeek"][e.target.dataset.id] = e.target.checked
+                                })
+                                let weekDayCheckboxLabel = document.createElement("label")
+                                weekDayCheckboxLabel.classList.add('form-label')
+                                weekDayCheckboxLabel.innerHTML = day[1]
+                                div.insertAdjacentElement("beforeend", weekDayCheckbox)
+                                div.insertAdjacentElement("beforeend", weekDayCheckboxLabel)
+                                div.insertAdjacentHTML("beforeend", `<br>`)
+                            }
+                            fieldsWrapper.insertAdjacentElement("beforeend", div)
+                        } else if (e.target.value == "specific_date") {
+                            let date = document.createElement("input")
+                            date.classList.add("form-control")
+                            date.type = "date"
+                            date.dataset.trigger_id = e.target.dataset.trigger_id
+                            date.addEventListener("input", (e) => {
+                                triggerObject[e.target.dataset.trigger_id]["specificDate"] = e.target.value
+                            })
+                            fieldsWrapper.insertAdjacentElement("beforeend", date)
+                        }
+                    })
+                    fieldsWrapper.insertAdjacentElement("beforeend", span)
+                    fieldsWrapper.insertAdjacentElement("beforeend", timePicker)
+                    fieldsWrapper.insertAdjacentElement("beforeend", repeatSelect)
+                } else if (e.target.value == "state_value") {
+                    let deviceSelect = document.createElement("select")
+                    deviceSelect.classList.add("form-control")
+                    deviceSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                    deviceSelect.innerHTML = `<option disabled selected>Select device</option>`
+                    devices.forEach(device => {
+                        deviceSelect.innerHTML += `<option value="${device.id}">${device.name}</option>`
+                    })
+                    deviceSelect.addEventListener("change", (e) => {
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        triggerObject[e.target.dataset.trigger_id]["device"] = e.target.value
+                        const stateSelect = document.createElement("select")
+                        stateSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                        stateSelect.classList.add("form-control")
+                        stateSelect.innerHTML = `<option disabled selected>Select state</option>`
+                        let device = devices.find(d => d.id == e.target.value);
+                        device.state.forEach(state => {
+                            stateSelect.innerHTML += `<option value="${state.id}">${capitalize(state.field.split("_"))}</option>`
+                        })
+                        stateSelect.addEventListener("change", (e) => {
+                            while (e.target.nextElementSibling != null) {
+                                e.target.nextElementSibling.remove()
+                            }
+                            triggerObject[e.target.dataset.trigger_id]["state"] = e.target.value
+                            const operatorSelect = document.createElement("select")
+                            operatorSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                            operatorSelect.classList.add("form-control")
+                            operatorSelect.innerHTML = `<option disabled selected>Select operator</option>`
+                            const selectedState = states.find(s => s.id == e.target.value)
+                            if (selectedState.data_type == "number" || selectedState.data_type == "string") {
+                                operatorSelect.innerHTML += `<option value="eq">=</option><option value="gt">&gt;</option><option value="lt">&lt;</option><option value="gte">&ge;</option><option value="lte">&le;</option>`
+                            } else if (selectedState.data_type == "boolean") {
+                                operatorSelect.innerHTML += `<option value="eq">=</option><option value="ne">&ne; (!=) (<>)</option>`
+                            }
+                            operatorSelect.addEventListener("change", (e) => {
+                                triggerObject[e.target.dataset.trigger_id]["operator"] = e.target.value
+                            })
+                            fieldsWrapper.insertAdjacentElement("beforeend", operatorSelect)
+                            const valueInput = document.createElement("input")
+                            valueInput.dataset.trigger_id = e.target.dataset.trigger_id
+                            valueInput.classList.add("form-control")
+                            valueInput.placeholder = selectedState.data_type == "number" ? "ex. 35" : (selectedState.data_type == "string" ? "ex. string value" : "true/false")
+                            valueInput.addEventListener("input", (e) => {
+                                triggerObject[e.target.dataset.trigger_id]["value"] = e.target.value
+                            })
+                            fieldsWrapper.insertAdjacentElement("beforeend", valueInput)
+                        })
+                        fieldsWrapper.insertAdjacentElement("beforeend", stateSelect)
+                    })
+                    fieldsWrapper.insertAdjacentElement("beforeend", deviceSelect)
+                } else if (e.target.value == "action_trigger") {
+                    let deviceSelect = document.createElement("select")
+                    deviceSelect.classList.add("form-control")
+                    deviceSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                    deviceSelect.innerHTML = `<option disabled selected>Select device</option>`
+                    devices.filter(d => d.actions.length > 0).forEach(device => {
+                        deviceSelect.innerHTML += `<option value="${device.id}">${device.name}</option>`
+                    })
+                    deviceSelect.addEventListener("change", (e) => {
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        triggerObject[e.target.dataset.trigger_id]["device"] = e.target.value
+                        const actionSelect = document.createElement("select")
+                        actionSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                        actionSelect.classList.add("form-control")
+                        actionSelect.innerHTML = `<option disabled selected>Select action</option>`
+                        let device = devices.find(d => d.id == e.target.value);
+                        device.signals.forEach(signal => {
+                            actionSelect.innerHTML += `<option value="${signal.id}">${signal.name}</option>`
+                        })
+                        actionSelect.addEventListener("change", (e) => {
+                            triggerObject[e.target.dataset.trigger_id]["action"] = e.target.value
+                        })
+                        fieldsWrapper.insertAdjacentElement("beforeend", actionSelect)
+                    })
+                    fieldsWrapper.insertAdjacentElement("beforeend", deviceSelect)
+                } else if (e.target.value == "weather") {
+                    let whenSelect = document.createElement("select")
+                    whenSelect.classList.add("form-control")
+                    whenSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                    whenSelect.innerHTML = `<option disabled selected>Select when</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="tomorrow">Tomorrow</option>`
+                    whenSelect.addEventListener("change", (e) => {
+                        console.log(e.target.value)
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        if (e.target.value == "") {
+                            return
+                        }
+                        triggerObject[e.target.dataset.trigger_id].when = e.target.value
+                        const span = document.createElement("span")
+                        span.innerText = e.target.value == "yesterday" ? "was" : "is"
+                        const conditionSelect = document.createElement("select")
+                        conditionSelect.classList.add("form-control")
+                        conditionSelect.dataset.trigger_id = e.target.dataset.trigger_id
+                        conditionSelect.innerHTML = `<option disabled selected value="">Select Condition</option>`
+                        conditionSelect.innerHTML += WEATHER_CONDITIONS.map((condition) => `<option value="${condition[0]}">${condition[1]}</option>`).join(" ")
+                        conditionSelect.addEventListener("change", (e) => {
+                            triggerObject[e.target.dataset.trigger_id].weatherCondition = e.target.value
+                        })
+                        fieldsWrapper.insertAdjacentElement("beforeend", span)
+                        fieldsWrapper.insertAdjacentElement("beforeend", conditionSelect)
+                    })
+                    fieldsWrapper.insertAdjacentElement("beforeend", whenSelect)
+                }
+            })
+            {#wrapper.insertAdjacentElement("beforeend", triggerTypeLabel)#}
+            wrapper.insertAdjacentElement("beforeend", triggerTypeSelect)
+            wrapper.insertAdjacentElement("beforeend", fieldsWrapper)
+            triggerCounter++;
+            return superWrapper
+        }
+
+        function generateActionFields() {
+            actionObject[`${actionCounter}`] = {
+                actionType: "",
+                device: "",
+                group: "",
+                action: "",
+                values: {},
+            }
+
+
+            let wrapper = document.createElement("div")
+
+            wrapper.style = "background: #FFFFFF; border-radius: 8px; padding: 8px;  border: 1px solid lightgray; margin-bottom: 8px; position: relative"
+            wrapper.dataset.action_id = `${actionCounter}`
+
+
+            let deleteBtn = document.createElement("button")
+            deleteBtn.classList.add("btn", "btn-danger")
+            deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+</svg>`
+            deleteBtn.style = `position: absolute; right: 0px; top: 0px`
+            deleteBtn.dataset.action_id = `${actionCounter}`
+            deleteBtn.addEventListener("click", (e) => {
+                e.preventDefault()
+                delete actionObject[e.currentTarget.dataset.action_id]
+                wrapper.remove()
+            })
+
+            wrapper.insertAdjacentElement("beforeend", deleteBtn)
+
+            let deviceLabel = document.createElement("label")
+
+            deviceLabel.classList.add("form-label")
+            deviceLabel.innerText = "Action Type"
+
+
+            let select = document.createElement("select")
+            let options = [`<option selected disabled>Select action type</option><option value="device_action">Device Action</option><option value="group_action">Group Action</option>`]
+            select.innerHTML = options.join(" ")
+            select.dataset.action_id = `${actionCounter}`
+            select.classList.add("form-control")
+            select.addEventListener("change", (e) => {
+                while (e.target.nextElementSibling != null) {
+                    e.target.nextElementSibling.remove()
+                }
+                actionObject[e.target.dataset.action_id]["actionType"] = e.target.value
+                let deviceOrGroupLabel = document.createElement("label")
+                deviceOrGroupLabel.classList.add("form-label")
+                let deviceOrGroupSelect = document.createElement("select")
+                deviceOrGroupSelect.classList.add("form-control")
+                deviceOrGroupSelect.dataset.action_id = e.target.dataset.action_id
+                if (e.target.value == "device_action") {
+                    deviceOrGroupLabel.innerText = "Device"
+
+                    let deviceOrGroupOptions = [`<option selected disabled>Select device</option>`]
+                    devices.filter((d) => d.actions.length > 0).forEach((d) => {
+                        deviceOrGroupOptions.push(`<option value="${d.id}">${d.name}</option>`)
+                    })
+                    deviceOrGroupSelect.innerHTML = deviceOrGroupOptions.join(" ")
+                    deviceOrGroupSelect.addEventListener("change", (e) => {
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        actionObject[e.target.dataset.action_id]["device"] = e.target.value
+                        let device = devices.find(d => d.id == e.target.value);
+                        console.log(device)
+                        let actionSelect = document.createElement("select")
+                        actionSelect.classList.add("form-control")
+                        let actionOptions = [`<option selected disabled>Select Action</option>`]
+                        device.actions.forEach(action => {
+                            actionOptions.push(`<option value="${action.id}">${action.name}</option>`)
+                        })
+                        console.log(actionOptions)
+                        wrapper.insertAdjacentElement("beforeend", actionSelect)
+                        actionSelect.innerHTML = actionOptions.join(" ")
+                        actionSelect.dataset.action_id = e.target.dataset.action_id
+                        actionSelect.addEventListener("change", (e) => {
+                            while (e.target.nextElementSibling != null) {
+                                e.target.nextElementSibling.remove()
+                            }
+                            actionObject[e.target.dataset.action_id]["action"] = e.target.value
+                            let action = actions.find(d => d.id == e.target.value)
+                            console.log(action)
+                            let params = JSON.parse(action.parameters_schema.replaceAll("'", '"'))
+                            Object.keys(params).forEach(key => {
+                                const paramLabel = document.createElement("label")
+                                paramLabel.classList.add("form-label")
+                                paramLabel.innerText = key
+                                const paramInput = document.createElement("input")
+                                paramInput.classList.add("form-control")
+                                paramInput.dataset.valueName = key
+                                paramInput.dataset.action_id = e.target.dataset.action_id
+                                paramInput.addEventListener("input", (e) => {
+                                    console.log(e.target.dataset.action_id)
+                                    console.log(actionObject)
+                                    console.log(actionObject[e.target.dataset.action_id])
+                                    console.log(`param input change ${e.currentTarget.value}`)
+                                    actionObject[e.target.dataset.action_id]["values"][e.target.dataset.valueName] = e.target.value
+                                })
+                                paramInput.type = params[key]
+                                wrapper.insertAdjacentElement("beforeend", paramLabel)
+                                wrapper.insertAdjacentElement("beforeend", paramInput)
+                            })
+                        })
+                    })
+
+                } else if (e.target.value == "group_action") {
+                    deviceOrGroupLabel.innerText = "Group"
+
+                    let deviceOrGroupOptions = [`<option selected disabled>Select group</option>`]
+                    groups.filter((d) => d.actions.length > 0).forEach((g) => {
+                        deviceOrGroupOptions.push(`<option value="${g.id}">${g.name}</option>`)
+                    })
+                    deviceOrGroupSelect.innerHTML = deviceOrGroupOptions.join(" ")
+                    deviceOrGroupSelect.addEventListener("change", (e) => {
+                        while (e.target.nextElementSibling != null) {
+                            e.target.nextElementSibling.remove()
+                        }
+                        actionObject[e.target.dataset.action_id]["group"] = e.target.value
+                        let group = groups.find(d => d.id == e.target.value);
+                        console.log(group)
+                        let actionSelect = document.createElement("select")
+                        actionSelect.classList.add("form-control")
+                        actionSelect.dataset.action_id = e.target.dataset.action_id
+                        let actionOptions = [`<option selected disabled>Select Action</option>`]
+                        group.actions.forEach(action => {
+                            actionOptions.push(`<option value="${action.id}">${action.name}</option>`)
+                        })
+                        console.log(actionOptions)
+                        wrapper.insertAdjacentElement("beforeend", actionSelect)
+                        actionSelect.innerHTML = actionOptions.join(" ")
+                        actionSelect.addEventListener("change", (e) => {
+                            while (e.target.nextElementSibling != null) {
+                                e.target.nextElementSibling.remove()
+                            }
+
+                            let action = actions.find(d => d.id == e.target.value)
+                            actionObject[e.target.dataset.action_id]["action"] = e.target.value
+                            console.log(action)
+                            let params = JSON.parse(action.parameters_schema.replaceAll("'", '"'))
+                            Object.keys(params).forEach(key => {
+                                const paramLabel = document.createElement("label")
+                                paramLabel.classList.add("form-label")
+                                paramLabel.innerText = key
+                                const paramInput = document.createElement("input")
+                                paramInput.classList.add("form-control")
+                                paramInput.dataset.valueName = key
+                                paramInput.dataset.action_id = e.target.dataset.action_id
+                                paramInput.type = params[key]
+                                paramInput.addEventListener("input", (e) => {
+                                    actionObject[e.target.dataset.action_id]["values"][e.target.dataset.valueName] = e.target.value
+                                })
+                                wrapper.insertAdjacentElement("beforeend", paramLabel)
+                                wrapper.insertAdjacentElement("beforeend", paramInput)
+                                {#wrapper.innerHTML += `<label class="form-label">${key}</label><input type="${params[key]}" class="form-control"/>`#}
+                            })
+                        })
+                    })
+                }
+
+                wrapper.insertAdjacentElement("beforeend", deviceOrGroupLabel)
+                wrapper.insertAdjacentElement("beforeend", deviceOrGroupSelect)
+            })
+
+
+            wrapper.insertAdjacentElement("beforeend", deviceLabel)
+            wrapper.insertAdjacentElement("beforeend", select)
+            {#wrapper.insertAdjacentElement("beforeend", actionLabel)#}
+            {#wrapper.insertAdjacentElement("beforeend", actionSelect)#}
+            {#wrapper.insertAdjacentElement("beforeend", actionsDiv)#}
+            actionCounter++;
+            return wrapper
+        }
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault()
+            console.log(triggerObject)
+            const operators = document.getElementsByClassName("operator")
+            let operatorArray = []
+            for (let operator of operators) {
+                operatorArray.push(operator.value)
+            }
+            const triggerObjectInput = document.getElementById("trigger-object-input");
+            const operatorObjectInput = document.getElementById("operator-object-input");
+            const actionObjectInput = document.getElementById("action-object-input");
+            triggerObjectInput.value = JSON.stringify(triggerObject);
+            operatorObjectInput.value = JSON.stringify(operatorArray)
+            actionObjectInput.value = JSON.stringify(actionObject)
+            form.submit()
+        })
+
+    </script>
+{% endblock content %}

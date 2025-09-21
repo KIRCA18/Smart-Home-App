@@ -1,0 +1,34 @@
+<header class="d-flex flex-row align-items-center justify-content-between">
+    <div class="d-flex flex-row align-items-center gap-4">
+        <button class="align-self-end" style="outline: none; background: none; border: none; padding: 6px;"
+                id="sidebarToggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                 class="bi bi-layout-sidebar"
+                 viewBox="0 0 16 16">
+                <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z"></path>
+            </svg>
+        </button>
+        <h3 style="margin: 0">{{ location }}</h3>
+        <span>{{ role }}</span>
+    </div>
+    <div id="header-user">
+        <div class="d-flex align-items-center justify-content-center gap" style="padding: 8px;">
+            <img src="{{ request.user.get_avatar_url }}"
+                 width="32" height="32" style="overflow: hidden; border-radius: 100%" alt="avatar">
+            <div>
+                <p style="margin-bottom: 0; font-weight: 500">{{ request.user.first_name }} {{ request.user.last_name }}</p>
+                <p style="margin-bottom: 0; margin-top: -5px; font-weight: 300; font-size: 12px">
+                    @{{ request.user.username }}</p>
+            </div>
+        </div>
+        <div id="header-user-options">
+            <button data-bs-toggle="modal" data-bs-target="#invitations_modal" class="btn btn-light">
+                Invitations
+            </button>
+            <a class="btn btn-primary" href="{% url 'logout' %}">
+                Logout
+            </a>
+
+        </div>
+    </div>
+</header>

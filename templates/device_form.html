@@ -1,13 +1,24 @@
 {% extends 'main.html' %}
 
 {% block content %}
-    <p>ID: {{ device.id }}</p>
-    <p>Password: <span style="font-family: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace">{{ device.password }}</span></p>
-    <form action="?device={{ device.id }}" method="post">
+    <form action="" method="post" style="max-width: 300px;">
         {% csrf_token %}
-        <input hidden value="{{ device.id }}" name="id"/>
-        {{ form.as_p }}
+        <h3>Add Device</h3>
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input required class="form-control" name="name" placeholder="Main Light" value="{{ device.name }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Room</label>
+            <select required class="form-control" name="room"
+                    style="outline: none; border: none; padding: 8px 16px; background: #FAFAFC; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px">
+                {% for room in selected_house.rooms.all %}
+                    <option {% if device.room == room %}
+                        selected
+                    {% endif %} value="{{ room.id }}">{{ room.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <button class="btn btn-primary" type="submit">Save</button>
-        {% if type and type == 'update' %}<a href="{{ request.META.HTTP_REFERER }}" class="btn btn-danger">Cancel</a>{% else %}<a href="{% url 'cancel-device' pk=device.id %}" class="btn btn-danger">Cancel</a>{% endif %}
     </form>
 {% endblock content %}

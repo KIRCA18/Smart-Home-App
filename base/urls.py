@@ -1,4 +1,6 @@
-from django.urls import path
+from django.conf.urls.static import static
+from django.urls import path, include
+from django.conf import settings
 from . import views
 
 urlpatterns = [
@@ -8,7 +10,22 @@ urlpatterns = [
     path('', views.home, name="home"),
     path('settings/', views.settings, name="settings"),
     path('house/<str:pk>', views.house, name="house"),
+    path('house/<str:pk>/partial', views.partialHouse, name="partial-house"),
+    path('house/<str:pk>/rooms', views.houseRooms, name="house-rooms"),
+    path('house/<str:pk>/devices', views.houseDevices, name="house-devices"),
+    path('house/<str:pk>/add-qr-device', views.addQRDevice, name="add-qr-devices"),
+    path('house/<str:pk>/add-manual-device', views.addManualDevice, name="add-manual-devices"),
+    path('house/<str:pk>/groups', views.houseGroups, name="house-groups"),
+    path('house/<str:pk>/create-group', views.createGroup, name="create-group"),
+    path('house/<str:pk>/automation', views.houseAutomation, name="house-automation"),
+    path('house/<str:pk>/add-automation', views.addAutomation, name="add-automation"),
+    path('house/<str:pk>/toggle-automation', views.toggleAutomation, name="toggle-automation"),
+    path('house/<str:pk>/delete-automation', views.deleteAutomation, name="delete-automation"),
+    path('house/<str:pk>/members', views.houseMembers, name="house-members"),
     path('house/<str:pk>/room/<str:rpk>', views.houseRoom, name="house-room"),
+    path('house/<str:pk>/invite', views.inviteMember, name="invite-member"),
+    path('house/<str:pk>/remove-member/<str:mpk>', views.removeMember, name="remove-member"),
+    path('invite/<str:pk>', views.handleInvite, name="handle-invite"),
     path('create-house/', views.createHouse, name="create-house"),
     path('update-house/<str:pk>/', views.updateHouse, name="update-house"),
     path('delete-house/<str:pk>/', views.deleteHouse, name="delete-house"),
@@ -19,11 +36,17 @@ urlpatterns = [
     path('delete-device/<str:pk>', views.deleteDevice, name="delete-device"),
     path('connect-device/<str:key>', views.connectDevice, name="connect-device"),
     path('exists-device/<str:pk>', views.existsDevice, name="exists-device"),
-    path('control-device/<str:pk>', views.controlDevice, name="control-device"),
+    path('control-device/', views.controlDevice, name="control-device"),
     path('devices/', views.devices, name="devices"),
     path('update-device/<str:pk>', views.updateDevice, name="update-devices"),
     path('add-device/<str:pk>', views.addDevice, name="add-device"),
-    path('cancel-device/<str:pk>', views.cancelDevice, name="cancel-device"),
-
-
+    path('cancel-device/', views.cancelDevice, name="cancel-device"),
+    path('add-widget/<str:pk>', views.addWidget, name="add-widget"),
+    path('remove-widget/<str:pk>', views.removeWidget, name="remove-widget"),
+    path('update-group/<str:pk>', views.updateGroup, name="update-group"),
+    path('delete-group/<str:pk>', views.deleteGroup, name="delete-group"),
+    path('process-command/<str:pk>', views.processCommand, name='process-command'),
+    path('voice-command/<str:pk>', views.voiceCommand, name="voice-command"),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

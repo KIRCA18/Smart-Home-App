@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+    <script defer src="{% static 'scripts/deviceFilters.js' %}"></script>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3>Devices</h3>
+            <div style="margin: 8px; display: flex; align-items: center; gap: 16px; font-size: 12px">
+                <span>{{ total }} total</span>
+                <span style="background: #DCFCE7; padding: 4px 8px; border-radius: 4px">{{ online }} online</span>
+                <span style="background: lightpink; padding: 4px 8px; border-radius: 4px">{{ offline }} offline</span>
+            </div>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_device_modal">+ Add Device</button>
+    </div>
+    <div style="padding: 8px; display: flex; justify-content: start; border: 1px solid #E5E5E5; border-radius: 12px; gap: 16px">
+        <div style="padding: 8px 16px; background: #FAFAFC; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#717182" class="bi bi-search"
+                 viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"></path>
+            </svg>
+            <input id="deviceInput" style="background: transparent; outline: none; border: none" type="text"
+                   placeholder="Search devices..." value="{{ deviceValue }}">
+        </div>
+        <select id="roomSelect"
+                style="outline: none; border: none; padding: 8px 16px; background: #FAFAFC; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px">
+            <option {% if selected_room == 0 or not selected_room %} selected {% endif %} value="0">All Rooms</option>
+            {% for room in rooms %}
+                <option {% if selected_room == room.id %} selected {% endif %}
+                                                          value="{{ room.id }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <br>
+    <div class="grid-container">
+        {% for device in devices %}
+            {% if device.device.view != '' %}
+                {% include device.device.view with device=device%}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <script>
+        let room_menu = document.querySelectorAll(".collapsable-menu")
+
+        room_menu.forEach(val => {
+            val.addEventListener("click", (e) => {
+                let options = val.parentNode.querySelector(".collapsable-options")
+                let expanded = options.style.display == "flex"
+                options.style.display = expanded ? "none" : "flex"
+            })
+        })
+    </script>
+{% endblock content %}

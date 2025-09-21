@@ -1,0 +1,22 @@
+<div class="modal fade" id="invite_modal" tabindex="-1" aria-labelledby="invite_modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Invite member to {{ selected_house.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'invite-member' pk=selected_house.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label" for="username">
+                            Username
+                        </label>
+                        <input class="form-control" id="username" name="username" placeholder="some_username">
+                    </div>
+                    <button class="btn btn-primary" type="submit">Invite</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
