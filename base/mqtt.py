@@ -38,7 +38,7 @@ def exist_message(mqtt_client, userdata, msg):
 
 def data_message(mqtt_client, userdata, msg):
     alldata = json.loads(msg.payload)
-    # print(alldata)
+    print(alldata)
     device = Device.objects.get(mac_address=alldata['id'])
     roomDevice = device.installations.first()
     # print(roomDevice)
